@@ -27,6 +27,15 @@ const MapScreen = () => {
     text = errorMsg;
   }
 
+  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === "YOUR_GOOGLE_MAPS_API_KEY") {
+    return (
+      <View style={styles.container}>
+        <Text>Google Maps API Key is missing.</Text>
+        <Text>Please add it to your .env file to display the map.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {location ? (
@@ -55,7 +64,7 @@ const MapScreen = () => {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   map: {
