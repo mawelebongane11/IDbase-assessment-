@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { User } from 'firebase/auth';
 import CarAnimation from '../../../components/CarAnimation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import MapView from '../../../components/MapView';
 
 const availableRoutes = [
   { id: '1', from: 'Johannesburg', to: 'Pretoria', price: 580, distance: 58, icon: 'car-arrow-right' },
@@ -54,6 +55,7 @@ export default function HomeScreen() {
   const [showAnimation, setShowAnimation] = useState(false);
   const [theme, setTheme] = useState(themes.dark);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -201,6 +203,7 @@ export default function HomeScreen() {
         {showAnimation && <CarAnimation />}
         <Appbar.Header style={{backgroundColor: 'transparent'}}>
           <Appbar.Content title="IDBase Rideshare" titleStyle={styles.appbarTitle}/>
+          <Button color={theme.primary} onPress={() => setShowMap(!showMap)}>{showMap ? 'Show Routes' : 'Show Map'}</Button>
           <Menu
             visible={menuVisible}
             onDismiss={() => setMenuVisible(false)}
@@ -212,48 +215,53 @@ export default function HomeScreen() {
           <Appbar.Action icon="information-outline" color={theme.primary} onPress={() => setAboutModalVisible(true)} />
           <Button color={theme.primary} onPress={handleSignOut}>Sign Out</Button>
         </Appbar.Header>
-        <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            <Title style={styles.listTitle}>Available Routes</Title>
-            <FlatList
-                data={availableRoutes}
-                renderItem={renderRoute}
-                keyExtractor={item => item.id}
-                contentContainerStyle={{ paddingHorizontal: 8 }}
-            />
-            <Button 
-                mode="contained" 
-                onPress={handleBookNow} 
-                style={styles.button} 
-                labelStyle={styles.buttonLabel}
-                disabled={!selectedRoute}
-            >
-                Book Now
-            </Button>
 
-            <Title style={styles.listTitle}>My Bookings</Title>
-            {bookings.length > 0 ? (
+        {showMap ? (
+          <MapView />
+        ) : (
+          <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <Title style={styles.listTitle}>Available Routes</Title>
               <FlatList
-                  data={bookings}
+                  data={availableRoutes}
+                  renderItem={renderRoute}
                   keyExtractor={item => item.id}
-                  renderItem={({ item }) => (
-                      <List.Item
-                        title={`${item.route.from} to ${item.route.to}`}
-                        description={`ZAR ${item.route.price} - ${item.route.distance} km`}
-                        left={props => <List.Icon {...props} icon={item.route.icon} color={theme.primary} />}
-                        right={() => (
-                          <Button onPress={() => { setCurrentBooking(item); setModalVisible(true); }} color={theme.primary}>
-                            Manage
-                          </Button>
-                        )}
-                        titleStyle={{ color: theme.text }}
-                        descriptionStyle={{ color: theme.subtext }}
-                      />
-                  )}
+                  contentContainerStyle={{ paddingHorizontal: 8 }}
               />
-            ) : (
-              <Text style={styles.emptyText}>You have no active bookings.</Text>
-            )}
-        </Animated.View>
+              <Button 
+                  mode="contained" 
+                  onPress={handleBookNow} 
+                  style={styles.button} 
+                  labelStyle={styles.buttonLabel}
+                  disabled={!selectedRoute}
+              >
+                  Book Now
+              </Button>
+
+              <Title style={styles.listTitle}>My Bookings</Title>
+              {bookings.length > 0 ? (
+                <FlatList
+                    data={bookings}
+                    keyExtractor={item => item.id}
+                    renderItem={({ item }) => (
+                        <List.Item
+                          title={`${item.route.from} to ${item.route.to}`}
+                          description={`ZAR ${item.route.price} - ${item.route.distance} km`}
+                          left={props => <List.Icon {...props} icon={item.route.icon} color={theme.primary} />}
+                          right={() => (
+                            <Button onPress={() => { setCurrentBooking(item); setModalVisible(true); }} color={theme.primary}>
+                              Manage
+                            </Button>
+                          )}
+                          titleStyle={{ color: theme.text }}
+                          descriptionStyle={{ color: theme.subtext }}
+                        />
+                    )}
+                />
+              ) : (
+                <Text style={styles.emptyText}>You have no active bookings.</Text>
+              )}
+          </Animated.View>
+        )}
         {aboutModalVisible && (
             <Modal
                 animationType="slide"
